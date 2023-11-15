@@ -1,10 +1,12 @@
 import React, { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
   const confirmpasswordInputRef = useRef();
   const [isLogin, setIsLogin] = useState(true);
+  const navigate = useNavigate();
 
   const switchAuthModeHandler = () => {
     setIsLogin((prevState) => !prevState);
@@ -15,7 +17,10 @@ const SignUp = () => {
 
     const enteredEmail = emailInputRef.current.value;
     const enteredPassword = passwordInputRef.current.value;
-    const enteredConfirmPassword = confirmpasswordInputRef.current.value;
+    // Check if ref exists before accessing value
+    const enteredConfirmPassword = confirmpasswordInputRef.current
+      ? confirmpasswordInputRef.current.value
+      : "";
     if (!isLogin) {
       if (enteredPassword === enteredConfirmPassword) {
         fetch(
@@ -39,6 +44,30 @@ const SignUp = () => {
       } else {
         alert("Enter Valid Details");
       }
+    } else {
+      fetch(
+        `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBQGXF7XQ8qN-fY8qT8f7SuuJiwrIRZjsY`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            email: enteredEmail,
+            password: enteredPassword,
+            returnSecureToken: true,
+          }),
+        }
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.error) {
+            alert(data.error.message);
+          } else {
+            emailInputRef.current.value = "";
+            passwordInputRef.current.value = "";
+            navigate("/welcome");
+            console.log("Welcome to Expense Tracker");
+          }
+        })
+        .catch((error) => console.error("Error during login:", error));
     }
   };
   return (
