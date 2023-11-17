@@ -19,8 +19,16 @@ const Welcome = () => {
       });
   };
 
+  const logoutHandle = () => {
+    localStorage.removeItem("token");
+  };
   return (
     <div className="mt-5">
+      <div className="d-flex justify-content-end mb-2">
+        <Link to="/logout" className="btn btn-dark" onClick={logoutHandle}>
+          Logout
+        </Link>
+      </div>
       <div className="row">
         <div className="col-md-6">
           <h4>Welcome to Expense Tracker</h4>

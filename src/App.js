@@ -18,6 +18,10 @@ function App() {
       path: "/complete",
       element: <UpdateProfile />,
     },
+    {
+      path: "/logout",
+      element: <SignUp />,
+    },
   ]);
 
   return (
