@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import StoreContext from "./StoreContext";
 
 const SignUp = () => {
@@ -24,7 +24,6 @@ const SignUp = () => {
       ? confirmpasswordInputRef.current.value
       : "";
 
-
     if (!isLogin) {
       if (enteredPassword === enteredConfirmPassword) {
         fetch(
@@ -41,7 +40,7 @@ const SignUp = () => {
           .then((res) => res.json())
           .then((data) => {
             console.log("User has successfully signed up");
-            
+
             emailInputRef.current.value = "";
             passwordInputRef.current.value = "";
             confirmpasswordInputRef.current.value = "";
@@ -97,7 +96,7 @@ const SignUp = () => {
                   required
                 />
               </div>
-              <div className="mb-3">
+              <div className={isLogin ? "mb-0" : "mb-3"}>
                 <label htmlFor="password" className="form-label">
                   Your Password
                 </label>
@@ -122,6 +121,11 @@ const SignUp = () => {
                     required
                   />
                 </div>
+              )}
+              {isLogin && (
+                <Link to="/forgetPassword" className="btn btn-link">
+                  Forget password
+                </Link>
               )}
               <div className="d-grid">
                 <button className="btn btn-primary">

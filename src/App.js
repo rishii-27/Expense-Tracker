@@ -3,6 +3,7 @@ import SignUp from "./SignUp";
 import Welcome from "./Welcome";
 import UpdateProfile from "./UpdateProfile";
 import { StoreContextProvider } from "./StoreContext";
+import ForgotPassword from "./ForgetPassword";
 
 function App() {
   const routes = createBrowserRouter([
@@ -21,6 +22,10 @@ function App() {
     {
       path: "/logout",
       element: <SignUp />,
+    },
+    {
+      path: "/forgetPassword",
+      element: <ForgotPassword />,
     },
   ]);
 
