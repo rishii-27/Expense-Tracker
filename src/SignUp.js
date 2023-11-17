@@ -1,5 +1,6 @@
-import React, { useRef, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import StoreContext from "./StoreContext";
 
 const SignUp = () => {
   const emailInputRef = useRef();
@@ -7,6 +8,7 @@ const SignUp = () => {
   const confirmpasswordInputRef = useRef();
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
+  const storeCtx = useContext(StoreContext);
 
   const switchAuthModeHandler = () => {
     setIsLogin((prevState) => !prevState);
@@ -21,6 +23,8 @@ const SignUp = () => {
     const enteredConfirmPassword = confirmpasswordInputRef.current
       ? confirmpasswordInputRef.current.value
       : "";
+
+
     if (!isLogin) {
       if (enteredPassword === enteredConfirmPassword) {
         fetch(
@@ -37,6 +41,7 @@ const SignUp = () => {
           .then((res) => res.json())
           .then((data) => {
             console.log("User has successfully signed up");
+            
             emailInputRef.current.value = "";
             passwordInputRef.current.value = "";
             confirmpasswordInputRef.current.value = "";
@@ -64,7 +69,8 @@ const SignUp = () => {
             emailInputRef.current.value = "";
             passwordInputRef.current.value = "";
             navigate("/welcome");
-            console.log("Welcome to Expense Tracker");
+            console.log("Welcome to Expense Tracker", data);
+            storeCtx.getToken(data.idToken);
           }
         })
         .catch((error) => console.error("Error during login:", error));

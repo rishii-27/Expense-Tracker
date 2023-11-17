@@ -1,6 +1,8 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import SignUp from "./SignUp";
 import Welcome from "./Welcome";
+import UpdateProfile from "./UpdateProfile";
+import { StoreContextProvider } from "./StoreContext";
 
 function App() {
   const routes = createBrowserRouter([
@@ -12,12 +14,18 @@ function App() {
       path: "/welcome",
       element: <Welcome />,
     },
+    {
+      path: "/complete",
+      element: <UpdateProfile />,
+    },
   ]);
 
   return (
-    <div className="container">
-      <RouterProvider router={routes} />
-    </div>
+    <StoreContextProvider>
+      <div className="container">
+        <RouterProvider router={routes} />
+      </div>
+    </StoreContextProvider>
   );
 }
 
