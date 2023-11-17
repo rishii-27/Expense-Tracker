@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const UpdateProfile = () => {
   const [fullName, setFullName] = useState("");
   const [profilePhotoUrl, setProfilePhotoUrl] = useState("");
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -25,7 +26,28 @@ const UpdateProfile = () => {
     )
       .then((res) => res.json())
       .then((data) => console.log(data));
+
+    // Set formSubmitted to true after form submission
+    setFormSubmitted(true);
   };
+
+  useEffect(() => {
+    // Fetch data only when the form is submitted
+    fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyBQGXF7XQ8qN-fY8qT8f7SuuJiwrIRZjsY`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          idToken: localStorage.getItem("token"),
+        }),
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => console.log(data));
+
+    // Reset formSubmitted to false after fetching data
+    setFormSubmitted(false);
+  }, [formSubmitted]);
 
   return (
     <div className="container mt-5">
