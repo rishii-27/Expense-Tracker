@@ -70,12 +70,27 @@ export const StoreContextProvider = (props) => {
 
   useEffect(() => fetchExpensesHandle(), []);
 
+  const deleteExpense = (id) => {
+    fetch(
+      `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses/${id}.json`,
+      {
+        method: "DELETE",
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+      });
+    setExpenses(expenses.filter((expense) => expense.id !== id));
+  };
+
   const contextValue = {
     loginStatus: token,
     getToken: getIdToken,
     expenses: expenses,
     addExpense: addExpenseHandle,
     expenseTotal: expenseTotal,
+    deleteExpense: deleteExpense,
   };
   console.log(contextValue.expenseTotal);
 

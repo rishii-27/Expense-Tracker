@@ -25,6 +25,11 @@ const ExpenseTracker = () => {
     setCategory("");
   };
 
+  const deleteHandle = (id) => {
+    StoreCtx.deleteExpense(id);
+    console.log(id);
+  };
+
   return (
     <div className="container mt-5 ">
       <h4>Add Expense</h4>
@@ -85,14 +90,27 @@ const ExpenseTracker = () => {
                 <th scope="col">Money Spent</th>
                 <th scope="col">Description</th>
                 <th scope="col">Category</th>
+                <th scope="col">Activity Button</th>
               </tr>
             </thead>
             <tbody>
-              {StoreCtx.expenses.map((expense, index) => (
-                <tr key={index}>
+              {StoreCtx.expenses.map((expense) => (
+                <tr key={expense.id}>
                   <td>{expense.moneySpent}</td>
                   <td>{expense.description}</td>
                   <td>{expense.category}</td>
+                  <td className="d-flex justify-content-around">
+                    <button type="button" className="btn btn-primary">
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      onClick={() => deleteHandle(expense.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
               <tr className="table table-dark">
