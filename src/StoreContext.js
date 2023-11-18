@@ -1,3 +1,4 @@
+// StoreContext.js
 import React, { useEffect, useState } from "react";
 
 const StoreContext = React.createContext({});
@@ -22,53 +23,42 @@ export const StoreContextProvider = (props) => {
     )
       .then((res) => res.json())
       .then((data) => {
-        // Set the id from the response in the item
         const newItem = { id: data.name, ...item };
-        console.log(newItem);
-
-        // Update expenses in state
         setExpenses([...expenses, newItem]);
       });
   };
-  console.log(expenses);
 
-  const expenseTotal = expenses.reduce((total, item) => {
-    total = total + parseFloat(item.moneySpent);
-    return total;
-  }, 0);
+  const updateExpenseHandle = (updatedExpense) => {
+    const updatedIndex = expenses.findIndex(
+      (expense) => expense.id === updatedExpense.id
+    );
 
-  const fetchExpensesHandle = () => {
     fetch(
-      `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses.json`
+      `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses/${updatedExpense.id}.json`,
+      {
+        method: "PUT", // Use PATCH method for updating existing data
+        body: JSON.stringify({
+          moneySpent: updatedExpense.moneySpent,
+          description: updatedExpense.description,
+          category: updatedExpense.category,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     )
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
-
-        const fetchedExpenses = [];
-        for (const key in data) {
-          fetchedExpenses.push({
-            id: key,
-            category: data[key].category,
-            description: data[key].description,
-            moneySpent: data[key].moneySpent,
-          });
+        if (data.error) {
+          console.error("Error updating expense in Firebase:", data.error);
+        } else {
+          // Update the expense in state
+          const updatedExpenses = [...expenses];
+          updatedExpenses[updatedIndex] = updatedExpense;
+          setExpenses(updatedExpenses);
         }
-
-        console.log(fetchedExpenses);
-
-        // const fetchedExpenses = Object.values(data).map((expense) => {
-        //   return {
-        //     category: expense.category,
-        //     description: expense.description,
-        //     moneySpent: expense.moneySpent,
-        //   };
-        // });
-        setExpenses(fetchedExpenses);
       });
   };
-
-  useEffect(() => fetchExpensesHandle(), []);
 
   const deleteExpense = (id) => {
     fetch(
@@ -89,10 +79,34 @@ export const StoreContextProvider = (props) => {
     getToken: getIdToken,
     expenses: expenses,
     addExpense: addExpenseHandle,
-    expenseTotal: expenseTotal,
+    updateExpense: updateExpenseHandle,
+    expenseTotal: expenses.reduce((total, item) => {
+      total = total + parseFloat(item.moneySpent);
+      return total;
+    }, 0),
     deleteExpense: deleteExpense,
   };
-  console.log(contextValue.expenseTotal);
+
+  const fetchExpensesHandle = () => {
+    fetch(
+      `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses.json`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        const fetchedExpenses = [];
+        for (const key in data) {
+          fetchedExpenses.push({
+            id: key,
+            category: data[key].category,
+            description: data[key].description,
+            moneySpent: data[key].moneySpent,
+          });
+        }
+        setExpenses(fetchedExpenses);
+      });
+  };
+
+  useEffect(() => fetchExpensesHandle(), []);
 
   return (
     <StoreContext.Provider value={contextValue}>

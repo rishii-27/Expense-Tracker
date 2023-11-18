@@ -5,19 +5,32 @@ const ExpenseTracker = () => {
   const [moneySpent, setMoneySpent] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
+  const [editingExpense, setEditingExpense] = useState(null); // Track the expense being edited
   const StoreCtx = useContext(StoreContext);
 
   const handleExpenseSubmit = (e) => {
     e.preventDefault();
 
-    const newExpense = {
-      moneySpent,
-      description,
-      category,
-    };
+    if (editingExpense) {
+      // If editing an expense, update the existing expense
+      StoreCtx.updateExpense({
+        ...editingExpense,
+        moneySpent,
+        description,
+        category,
+      });
 
-    // Update expenses
-    StoreCtx.addExpense(newExpense);
+      // Reset editing state
+      setEditingExpense(null);
+    } else {
+      // If not editing, add a new expense
+      const newExpense = {
+        moneySpent,
+        description,
+        category,
+      };
+      StoreCtx.addExpense(newExpense);
+    }
 
     // Clear form fields
     setMoneySpent("");
@@ -25,14 +38,23 @@ const ExpenseTracker = () => {
     setCategory("");
   };
 
+  const editHandle = (expense) => {
+    // Set the expense details in the form when editing
+    setMoneySpent(expense.moneySpent);
+    setDescription(expense.description);
+    setCategory(expense.category);
+
+    // Set the expense being edited
+    setEditingExpense(expense);
+  };
+
   const deleteHandle = (id) => {
     StoreCtx.deleteExpense(id);
-    console.log(id);
   };
 
   return (
-    <div className="container mt-5 ">
-      <h4>Add Expense</h4>
+    <div className="container mt-5">
+      <h4>{editingExpense ? "Edit Expense" : "Add Expense"}</h4>
       <form onSubmit={handleExpenseSubmit}>
         <div className="form-group">
           <label htmlFor="moneySpent">Money Spent:</label>
@@ -70,11 +92,10 @@ const ExpenseTracker = () => {
             <option value="Petrol">Petrol</option>
             <option value="Salary">Salary</option>
             <option value="Others">Others</option>
-            {/* Add more options as needed */}
           </select>
         </div>
         <button type="submit" className="btn btn-primary mt-2">
-          Add Expense
+          {editingExpense ? "Update Expense" : "Add Expense"}
         </button>
       </form>
 
@@ -100,7 +121,11 @@ const ExpenseTracker = () => {
                   <td>{expense.description}</td>
                   <td>{expense.category}</td>
                   <td className="d-flex justify-content-around">
-                    <button type="button" className="btn btn-primary">
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => editHandle(expense)}
+                    >
                       Edit
                     </button>
                     <button
