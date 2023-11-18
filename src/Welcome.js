@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import ExpenseTracker from "./ExpenseTracker";
 
 const Welcome = () => {
   const verifyEmailHandle = () => {
@@ -30,13 +31,15 @@ const Welcome = () => {
         </Link>
       </div>
       <div className="row">
-        <div className="col-md-6">
+        <div className="col-md-9">
           <h4>Welcome to Expense Tracker</h4>
         </div>
-        <div className="col-md-6 text-right">
+        <div className="col-md-3 text-right">
           <span>
             Your profile is Incomplete <br />
-            <Link to="/complete">Complete Now</Link>
+            <span>
+              <Link to="/complete">Complete Now</Link>
+            </span>
           </span>
         </div>
       </div>
@@ -47,6 +50,9 @@ const Welcome = () => {
       >
         Verify Email
       </button>
+      <div className="mt-5">
+        <ExpenseTracker />
+      </div>
     </div>
   );
 };
