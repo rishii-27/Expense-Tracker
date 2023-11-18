@@ -12,7 +12,7 @@ export const StoreContextProvider = (props) => {
     setToken(receivedToken);
   };
 
-  const expenseHandle = (item) => {
+  const addExpenseHandle = (item) => {
     fetch(
       `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses.json`,
       {
@@ -21,10 +21,16 @@ export const StoreContextProvider = (props) => {
       }
     )
       .then((res) => res.json())
-      .then((data) => console.log(data));
+      .then((data) => {
+        // Set the id from the response in the item
+        const newItem = { id: data.name, ...item };
+        console.log(newItem);
 
-    setExpenses([...expenses, item]);
+        // Update expenses in state
+        setExpenses([...expenses, newItem]);
+      });
   };
+  console.log(expenses);
 
   const expenseTotal = expenses.reduce((total, item) => {
     total = total + parseFloat(item.moneySpent);
@@ -38,13 +44,26 @@ export const StoreContextProvider = (props) => {
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
-        const fetchedExpenses = Object.values(data).map((expense) => {
-          return {
-            category: expense.category,
-            description: expense.description,
-            moneySpent: expense.moneySpent,
-          };
-        });
+
+        const fetchedExpenses = [];
+        for (const key in data) {
+          fetchedExpenses.push({
+            id: key,
+            category: data[key].category,
+            description: data[key].description,
+            moneySpent: data[key].moneySpent,
+          });
+        }
+
+        console.log(fetchedExpenses);
+
+        // const fetchedExpenses = Object.values(data).map((expense) => {
+        //   return {
+        //     category: expense.category,
+        //     description: expense.description,
+        //     moneySpent: expense.moneySpent,
+        //   };
+        // });
         setExpenses(fetchedExpenses);
       });
   };
@@ -55,7 +74,7 @@ export const StoreContextProvider = (props) => {
     loginStatus: token,
     getToken: getIdToken,
     expenses: expenses,
-    addExpense: expenseHandle,
+    addExpense: addExpenseHandle,
     expenseTotal: expenseTotal,
   };
   console.log(contextValue.expenseTotal);
