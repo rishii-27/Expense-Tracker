@@ -1,14 +1,19 @@
-import React, { useContext, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import StoreContext from "./StoreContext";
+import { useDispatch, useSelector } from "react-redux";
+import { authActions } from "./Redux/auth";
 
 const SignUp = () => {
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
   const confirmpasswordInputRef = useRef();
   const [isLogin, setIsLogin] = useState(true);
+
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const navigate = useNavigate();
-  const storeCtx = useContext(StoreContext);
+
+  console.log(isLoggedIn);
+  const dispatch = useDispatch();
 
   const switchAuthModeHandler = () => {
     setIsLogin((prevState) => !prevState);
@@ -26,25 +31,7 @@ const SignUp = () => {
 
     if (!isLogin) {
       if (enteredPassword === enteredConfirmPassword) {
-        fetch(
-          `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBQGXF7XQ8qN-fY8qT8f7SuuJiwrIRZjsY`,
-          {
-            method: "POST",
-            body: JSON.stringify({
-              email: enteredEmail,
-              password: enteredPassword,
-              returnSecureToken: true,
-            }),
-          }
-        )
-          .then((res) => res.json())
-          .then((data) => {
-            console.log("User has successfully signed up");
-
-            emailInputRef.current.value = "";
-            passwordInputRef.current.value = "";
-            confirmpasswordInputRef.current.value = "";
-          });
+        dispatch(authActions.signUp({ enteredEmail, enteredPassword }));
       } else {
         alert("Enter Valid Details");
       }
@@ -65,11 +52,10 @@ const SignUp = () => {
           if (data.error) {
             alert(data.error.message);
           } else {
-            emailInputRef.current.value = "";
-            passwordInputRef.current.value = "";
+            console.log("User has successfully logged in", data);
+
+            dispatch(authActions.login({ data }));
             navigate("/welcome");
-            console.log("Welcome to Expense Tracker", data);
-            storeCtx.getToken(data.idToken);
           }
         })
         .catch((error) => console.error("Error during login:", error));

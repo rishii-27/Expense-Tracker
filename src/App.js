@@ -2,8 +2,9 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import SignUp from "./SignUp";
 import Welcome from "./Welcome";
 import UpdateProfile from "./UpdateProfile";
-import { StoreContextProvider } from "./StoreContext";
 import ForgotPassword from "./ForgetPassword";
+import { Provider } from "react-redux";
+import store from "./Redux/store";
 
 function App() {
   const routes = createBrowserRouter([
@@ -30,11 +31,11 @@ function App() {
   ]);
 
   return (
-    <StoreContextProvider>
+    <Provider store={store}>
       <div className="container">
         <RouterProvider router={routes} />
       </div>
-    </StoreContextProvider>
+    </Provider>
   );
 }
 

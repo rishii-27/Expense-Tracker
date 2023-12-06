@@ -1,24 +1,73 @@
-import React, { useContext, useState } from "react";
-import StoreContext from "./StoreContext";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { expensesAction } from "./Redux/expenses";
 
 const ExpenseTracker = () => {
   const [moneySpent, setMoneySpent] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [editingExpense, setEditingExpense] = useState(null); // Track the expense being edited
-  const StoreCtx = useContext(StoreContext);
+
+  const expenses = useSelector((state) => state.expenses.expenses);
+  const dispatch = useDispatch();
+
+  console.log(expenses);
+
+  useEffect(() => {
+    const fetchExpensesHandle = async () => {
+      try {
+        const response = await fetch(
+          "https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses.json"
+        );
+        const data = await response.json();
+
+        console.log(data);
+
+        for (const key in data) {
+          dispatch(
+            expensesAction.addExpense({
+              id: key,
+              category: data[key].category,
+              description: data[key].description,
+              moneySpent: data[key].moneySpent,
+            })
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching expenses:", error);
+      }
+    };
+
+    fetchExpensesHandle();
+  }, [dispatch]);
 
   const handleExpenseSubmit = (e) => {
     e.preventDefault();
 
     if (editingExpense) {
+      const { id } = editingExpense; // Extract the id from editingExpense
+
+      fetch(
+        `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses/${id}.json`,
+        {
+          method: "PATCH", // Use PATCH for partial updates
+          body: JSON.stringify({
+            moneySpent,
+            description,
+            category,
+          }),
+        }
+      );
+
       // If editing an expense, update the existing expense
-      StoreCtx.updateExpense({
-        ...editingExpense,
-        moneySpent,
-        description,
-        category,
-      });
+      dispatch(
+        expensesAction.updateExpense({
+          ...editingExpense,
+          moneySpent,
+          description,
+          category,
+        })
+      );
 
       // Reset editing state
       setEditingExpense(null);
@@ -29,7 +78,22 @@ const ExpenseTracker = () => {
         description,
         category,
       };
-      StoreCtx.addExpense(newExpense);
+
+      fetch(
+        `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses.json`,
+        {
+          method: "POST",
+          body: JSON.stringify(newExpense),
+        }
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          // Set the id from the response in the item
+          const newItem = { id: data.name, expenses };
+          console.log(newItem);
+
+          dispatch(expensesAction.addExpense(newExpense));
+        });
     }
 
     // Clear form fields
@@ -49,8 +113,23 @@ const ExpenseTracker = () => {
   };
 
   const deleteHandle = (id) => {
-    StoreCtx.deleteExpense(id);
+    fetch(
+      `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses/${id}.json`,
+      {
+        method: "DELETE",
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        dispatch(expensesAction.deleteExpense(id));
+      });
   };
+
+  const totalExpense = expenses.reduce(
+    (total, expense) => total + parseInt(expense.moneySpent),
+    0
+  );
 
   return (
     <div className="container mt-5">
@@ -62,6 +141,7 @@ const ExpenseTracker = () => {
             type="number"
             className="form-control"
             id="moneySpent"
+            min="0"
             value={moneySpent}
             onChange={(e) => setMoneySpent(e.target.value)}
             required
@@ -99,7 +179,7 @@ const ExpenseTracker = () => {
         </button>
       </form>
 
-      {StoreCtx.expenses.length > 0 && (
+      {expenses.length > 0 && (
         <div className="row mt-4">
           <span className="border border-danger p-3">
             <h4 className="text-center">Expenses List</h4>
@@ -115,7 +195,7 @@ const ExpenseTracker = () => {
               </tr>
             </thead>
             <tbody>
-              {StoreCtx.expenses.map((expense) => (
+              {expenses.map((expense) => (
                 <tr key={expense.id}>
                   <td>{expense.moneySpent}</td>
                   <td>{expense.description}</td>
@@ -139,8 +219,17 @@ const ExpenseTracker = () => {
                 </tr>
               ))}
               <tr className="table table-dark">
-                <th>₹ {StoreCtx.expenseTotal}</th>
+                <th>₹ {totalExpense}</th>
                 <th colSpan="2">Total</th>
+                <th>
+                  {totalExpense > 10000 && (
+                    <div className="text-center">
+                      <button type="button" className="btn btn-success">
+                        Activate Premium
+                      </button>
+                    </div>
+                  )}
+                </th>
               </tr>
             </tbody>
           </table>
