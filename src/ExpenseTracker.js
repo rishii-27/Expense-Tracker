@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { expensesAction } from "./Redux/expenses";
+import { CSVLink } from "react-csv"; // Import the CSVLink component
 
 const ExpenseTracker = () => {
   const [moneySpent, setMoneySpent] = useState("");
@@ -131,6 +132,12 @@ const ExpenseTracker = () => {
     0
   );
 
+  const headers = [
+    { label: "Money Spent", key: "moneySpent" },
+    { label: "Description", key: "description" },
+    { label: "Category", key: "category" },
+  ];
+
   return (
     <div className="container mt-5">
       <h4>{editingExpense ? "Edit Expense" : "Add Expense"}</h4>
@@ -233,6 +240,17 @@ const ExpenseTracker = () => {
               </tr>
             </tbody>
           </table>
+
+          <div className="text-center mt-3">
+            <CSVLink
+              data={expenses}
+              headers={headers}
+              filename={"expenses.csv"}
+              className="btn btn-secondary"
+            >
+              Download CSV
+            </CSVLink>
+          </div>
         </div>
       )}
     </div>
