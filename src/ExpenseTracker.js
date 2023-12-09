@@ -7,7 +7,7 @@ const ExpenseTracker = () => {
   const [moneySpent, setMoneySpent] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
-  const [editingExpense, setEditingExpense] = useState(null); // Track the expense being edited
+  const [editingExpense, setEditingExpense] = useState(false); // Track the expense being edited
 
   const expenses = useSelector((state) => state.expenses.expenses);
   const dispatch = useDispatch();
@@ -42,36 +42,43 @@ const ExpenseTracker = () => {
     fetchExpensesHandle();
   }, [dispatch]);
 
-  const handleExpenseSubmit = (e) => {
+  const handleExpenseSubmit = async (e) => {
     e.preventDefault();
 
     if (editingExpense) {
-      const { id } = editingExpense; // Extract the id from editingExpense
+      const { id } = editingExpense;
 
-      fetch(
-        `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses/${id}.json`,
-        {
-          method: "PATCH", // Use PATCH for partial updates
-          body: JSON.stringify({
+      console.log(id);
+
+      try {
+        // Use PATCH for partial updates
+        await fetch(
+          `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses/${id}.json`,
+          {
+            method: "PATCH",
+            body: JSON.stringify({
+              moneySpent,
+              description,
+              category,
+            }),
+          }
+        );
+
+        // If editing an expense, update the existing expense
+        dispatch(
+          expensesAction.updateExpense({
+            ...editingExpense,
             moneySpent,
             description,
             category,
-          }),
-        }
-      );
+          })
+        );
 
-      // If editing an expense, update the existing expense
-      dispatch(
-        expensesAction.updateExpense({
-          ...editingExpense,
-          moneySpent,
-          description,
-          category,
-        })
-      );
-
-      // Reset editing state
-      setEditingExpense(null);
+        // Reset editing state
+        setEditingExpense(false);
+      } catch (error) {
+        console.error("Error updating expense:", error);
+      }
     } else {
       // If not editing, add a new expense
       const newExpense = {
@@ -80,21 +87,26 @@ const ExpenseTracker = () => {
         category,
       };
 
-      fetch(
-        `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses.json`,
-        {
-          method: "POST",
-          body: JSON.stringify(newExpense),
-        }
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          // Set the id from the response in the item
-          const newItem = { id: data.name, expenses };
-          console.log(newItem);
+      try {
+        const response = await fetch(
+          `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses.json`,
+          {
+            method: "POST",
+            body: JSON.stringify(newExpense),
+          }
+        );
 
-          dispatch(expensesAction.addExpense(newExpense));
-        });
+        const data = await response.json();
+        console.log(data);
+
+        // Set the id from the response in the item
+        const newItem = { id: data.name, ...newExpense };
+        console.log(newItem);
+
+        dispatch(expensesAction.addExpense(newItem));
+      } catch (error) {
+        console.error("Error adding new expense:", error);
+      }
     }
 
     // Clear form fields
