@@ -14,6 +14,7 @@ const Welcome = () => {
   // If it would be like initialState :{ theme: "light" } then we will be using state.theme.theme in useSelector.
 
   const theme = useSelector((state) => state.theme);
+  const isPremium = useSelector((state) => state.isPremium.isPremium);
 
   console.log(theme);
 
@@ -45,11 +46,13 @@ const Welcome = () => {
   return (
     <div className={`mt-2 ${theme === "dark" ? "bg-secondary" : ""}`}>
       <div className="d-flex justify-content-end mb-2">
-        <div style={{ marginRight: "10px" }}>
-          <button className="btn btn-dark" onClick={toggleThemeHandle}>
-            Toggle Theme
-          </button>
-        </div>
+        {isPremium && (
+          <div style={{ marginRight: "10px" }}>
+            <button className="btn btn-dark" onClick={toggleThemeHandle}>
+              Toggle Theme
+            </button>
+          </div>
+        )}
         <Link to="/logout" className="btn btn-dark" onClick={logoutHandle}>
           Logout
         </Link>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { expensesAction } from "./Redux/expenses";
 import { CSVLink } from "react-csv"; // Import the CSVLink component
+import { premiumActions } from "./Redux/premium";
 
 const ExpenseTracker = () => {
   const [moneySpent, setMoneySpent] = useState("");
@@ -10,11 +11,35 @@ const ExpenseTracker = () => {
   const [editingExpense, setEditingExpense] = useState(null); // Track the expense being edited
 
   const expenses = useSelector((state) => state.expenses.expenses);
+  const isPremium = useSelector((state) => state.isPremium.isPremium);
 
   const dispatch = useDispatch();
   const userEmail = localStorage.getItem("user");
 
-  console.log(expenses);
+  console.log(isPremium);
+
+  useEffect(() => {
+    const fetchUserPremiumStatus = async () => {
+      try {
+        const response = await fetch(
+          `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/${userEmail}/isPremium.json`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+
+          // If isPremium is true in Firebase, update Redux state
+          if (data === true) {
+            dispatch(premiumActions.updateUserPremiumStatus(true));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user premium status:", error);
+      }
+    };
+
+    fetchUserPremiumStatus();
+  }, [dispatch, userEmail]);
 
   useEffect(() => {
     const fetchExpensesHandle = async () => {
@@ -150,6 +175,28 @@ const ExpenseTracker = () => {
     0
   );
 
+  const premiumHandler = async () => {
+    try {
+      // Update the user's premium status in Firebase
+      const response = await fetch(
+        `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/${userEmail}/isPremium.json`,
+        {
+          method: "PUT",
+          body: JSON.stringify(true), // Set isPremium to true
+        }
+      );
+
+      if (response.ok) {
+        // Update the Redux state with the new premium status
+        dispatch(premiumActions.updateUserPremiumStatus(true));
+      } else {
+        console.error("Error activating premium:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error activating premium:", error);
+    }
+  };
+
   const headers = [
     { label: "Money Spent", key: "moneySpent" },
     { label: "Description", key: "description" },
@@ -249,9 +296,15 @@ const ExpenseTracker = () => {
                 <th>
                   {totalExpense > 10000 && (
                     <div className="text-center">
-                      <button type="button" className="btn btn-success">
-                        Activate Premium
-                      </button>
+                      {!isPremium && (
+                        <button
+                          type="button"
+                          className="btn btn-success"
+                          onClick={premiumHandler}
+                        >
+                          Activate Premium
+                        </button>
+                      )}
                     </div>
                   )}
                 </th>
