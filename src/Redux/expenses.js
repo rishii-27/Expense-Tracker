@@ -21,10 +21,14 @@ const expensesSlice = createSlice({
       }
     },
 
+    removeExpense(state) {
+      state.expenses = [];
+    },
     updateExpense: (state, action) => {
       const { id, moneySpent, description, category } = action.payload;
       const index = state.expenses.findIndex((expense) => expense.id === id);
-
+      console.log(moneySpent);
+      console.log(index);
       if (index !== -1) {
         state.expenses[index] = {
           ...state.expenses[index],

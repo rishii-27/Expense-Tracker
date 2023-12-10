@@ -7,18 +7,21 @@ const ExpenseTracker = () => {
   const [moneySpent, setMoneySpent] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
-  const [editingExpense, setEditingExpense] = useState(false); // Track the expense being edited
+  const [editingExpense, setEditingExpense] = useState(null); // Track the expense being edited
 
   const expenses = useSelector((state) => state.expenses.expenses);
+
   const dispatch = useDispatch();
+  const userEmail = localStorage.getItem("user");
 
   console.log(expenses);
 
   useEffect(() => {
     const fetchExpensesHandle = async () => {
       try {
+        console.log(userEmail);
         const response = await fetch(
-          "https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses.json"
+          `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/${userEmail}/expenses.json`
         );
         const data = await response.json();
 
@@ -40,7 +43,7 @@ const ExpenseTracker = () => {
     };
 
     fetchExpensesHandle();
-  }, [dispatch]);
+  }, [dispatch, userEmail]);
 
   const handleExpenseSubmit = async (e) => {
     e.preventDefault();
@@ -48,12 +51,13 @@ const ExpenseTracker = () => {
     if (editingExpense) {
       const { id } = editingExpense;
 
-      console.log(id);
+      console.log(id, userEmail);
+      console.log(editingExpense);
 
       try {
         // Use PATCH for partial updates
         await fetch(
-          `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses/${id}.json`,
+          `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/${userEmail}/expenses/${id}.json`,
           {
             method: "PATCH",
             body: JSON.stringify({
@@ -75,7 +79,7 @@ const ExpenseTracker = () => {
         );
 
         // Reset editing state
-        setEditingExpense(false);
+        setEditingExpense(null);
       } catch (error) {
         console.error("Error updating expense:", error);
       }
@@ -89,7 +93,7 @@ const ExpenseTracker = () => {
 
       try {
         const response = await fetch(
-          `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses.json`,
+          `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/${userEmail}/expenses.json`,
           {
             method: "POST",
             body: JSON.stringify(newExpense),
@@ -123,11 +127,13 @@ const ExpenseTracker = () => {
 
     // Set the expense being edited
     setEditingExpense(expense);
+    console.log(expense);
+    console.log(editingExpense);
   };
 
   const deleteHandle = (id) => {
     fetch(
-      `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/expenses/${id}.json`,
+      `https://expense-tracker-8bc1e-default-rtdb.firebaseio.com/${userEmail}/expenses/${id}.json`,
       {
         method: "DELETE",
       }

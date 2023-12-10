@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import ExpenseTracker from "./ExpenseTracker";
 import { useDispatch, useSelector } from "react-redux";
 import { themeActions } from "./Redux/theme";
+import { authActions } from "./Redux/auth";
+import { expensesAction } from "./Redux/expenses";
 // import "./welcome.css";
 
 const Welcome = () => {
@@ -33,11 +35,11 @@ const Welcome = () => {
   };
 
   const logoutHandle = () => {
-    localStorage.removeItem("token");
+    dispatch(authActions.logout());
+    dispatch(expensesAction.removeExpense());
   };
 
   const toggleThemeHandle = () => {
-    console.log("hi");
     dispatch(themeActions.toggleTheme());
   };
   return (
