@@ -31,7 +31,32 @@ const SignUp = () => {
 
     if (!isLogin) {
       if (enteredPassword === enteredConfirmPassword) {
-        dispatch(authActions.signUp({ enteredEmail, enteredPassword }));
+        fetch(
+          `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBQGXF7XQ8qN-fY8qT8f7SuuJiwrIRZjsY`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              email: enteredEmail,
+              password: enteredPassword,
+              returnSecureToken: true,
+            }),
+          }
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.error) {
+              alert(data.error.message);
+            } else {
+              console.log("User has successfully signed up", data);
+
+              emailInputRef.current.value = "";
+              passwordInputRef.current.value = "";
+              confirmpasswordInputRef.current.value = "";
+
+              dispatch(authActions.signUp({ enteredEmail, enteredPassword }));
+              alert("Sign up successful!");
+            }
+          });
       } else {
         alert("Enter Valid Details");
       }
